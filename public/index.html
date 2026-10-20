@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Print Shop - Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .token-slide { animation: slideIn 0.4s ease-out both; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div class="max-w-md mx-auto py-8 px-4">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-slate-900">Print Shop</h1>
+
+    </div>
+
+    <div id="pauseMessage" class="hidden bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-6 text-center">
+      <p class="font-semibold">Queue temporarily paused. Please wait.</p>
+    </div>
+
+    <form id="jobForm" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">
+          Customer Name
+        </label>
+        <input
+          type="text"
+          name="name"
+          required
+          placeholder="Your Name"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">
+          PDF File <span class="text-xs text-slate-400 font-normal">(max 25 MB)</span>
+        </label>
+        <input type="file" name="file" accept=".pdf" required
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Color Mode</label>
+          <div class="space-y-2">
+            <label class="flex items-center space-x-2 cursor-pointer select-none">
+              <input type="radio" name="color_mode" value="bw" checked
+                class="text-indigo-600 focus:ring-indigo-500" />
+              <span class="text-sm text-slate-700">Black &amp; White</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer select-none">
+              <input type="radio" name="color_mode" value="color"
+                class="text-indigo-600 focus:ring-indigo-500" />
+              <span class="text-sm text-slate-700">Color</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Print Sides</label>
+          <div class="space-y-2">
+            <label class="flex items-center space-x-2 cursor-pointer select-none">
+              <input type="radio" name="is_duplex" value="0" checked
+                class="text-indigo-600 focus:ring-indigo-500" />
+              <span class="text-sm text-slate-700">Single-Sided</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer select-none">
+              <input type="radio" name="is_duplex" value="1"
+                class="text-indigo-600 focus:ring-indigo-500" />
+              <span class="text-sm text-slate-700">Double-Sided</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Copies</label>
+        <div class="flex items-center gap-2">
+          <button type="button" id="decCopies"
+            class="px-3 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 text-slate-700 font-medium">−</button>
+          <input type="number" name="copies" value="1" min="1"
+            class="w-20 px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <button type="button" id="incCopies"
+            class="px-3 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 text-slate-700 font-medium">+</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Page Range</label>
+        <div class="space-y-2">
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="radio" name="page_range_mode" value="all" checked
+              class="text-indigo-600 focus:ring-indigo-500" />
+            <span class="text-sm text-slate-700">All Pages</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="radio" name="page_range_mode" value="custom"
+              class="text-indigo-600 focus:ring-indigo-500" />
+            <span class="text-sm text-slate-700">Custom Pages</span>
+          </label>
+        </div>
+        <div id="customPagesField" class="mt-2 hidden">
+          <input type="text" name="page_range" placeholder="e.g. 1-5, 8, 12"
+            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <p class="text-xs text-slate-500 mt-1">Enter page numbers or ranges separated by commas.</p>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn"
+        class="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+        Submit Print Job
+      </button>
+    </form>
+
+    <div id="progressContainer" class="hidden space-y-3">
+      <div class="flex justify-between text-sm font-medium text-slate-700">
+        <span>Uploading PDF…</span>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="w-full bg-slate-200 rounded-full h-3">
+        <div id="progressBar" class="bg-indigo-600 h-3 rounded-full" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div id="tokenCard" class="hidden bg-white p-6 rounded-2xl shadow-xl border border-slate-200 text-center token-slide">
+      <div class="text-green-600 font-bold text-sm tracking-wide mb-1">Job Submitted</div>
+      <div class="text-4xl font-bold text-slate-900 mb-1">Token
+        <span id="tokenNumber" class="text-indigo-600">#01</span>
+      </div>
+      <div id="tokenFileName" class="text-sm text-slate-500 truncate mx-auto mb-3 max-w-xs"></div>
+      <div id="tokenSpecs" class="text-xs text-slate-400 mb-4"></div>
+      <div id="statusBanner"
+        class="px-4 py-2 rounded-lg bg-blue-100 text-blue-800 text-sm font-medium mb-4">
+        Waiting in Queue
+      </div>
+      <div id="upiQrSection" class="hidden bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
+        <div class="flex flex-col items-center gap-3">
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-xs font-medium text-indigo-700">Pay via UPI</span>
+            <span class="text-xs text-indigo-600">Scan to pay at counter</span>
+          </div>
+          <img id="upiQrImage" src="" alt="UPI QR" class="w-32 h-32 rounded bg-white p-1 border border-slate-200" />
+          <span id="upiIdText" class="text-xs font-mono text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-200"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script src="customer.js"></script>
+</body>
+</html>
